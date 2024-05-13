@@ -36,11 +36,11 @@
 <br>
 
 ##### 로그인 페이지
-![로그인변환](https://github.com/techeer-sv/SpotlightSeoul/assets/97724189/ef4f55a9-6a60-4b64-9bfd-6fc302ca7c69)
+![로그인 벼노한](https://github.com/techeer-sv/SpotlightSeoul/assets/97724189/1182d746-80eb-469d-873b-ea7cc97e213a)
 <br>
 
 ##### 회원가입 페이지
-![회원가입변환](https://github.com/techeer-sv/SpotlightSeoul/assets/97724189/516f63f2-0f6b-408c-9f76-6205c4a5c4c6)
+![회원가입 변환](https://github.com/techeer-sv/SpotlightSeoul/assets/97724189/b8420df2-d24a-44fa-9b8a-543ba5b12597)
 
 
 <br> <br>
