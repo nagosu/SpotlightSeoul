@@ -1,0 +1,43 @@
+services:
+  mysql:
+    image: mysql:8.4
+    container_name: seoul-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      TZ: Asia/Seoul
+    command:
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_unicode_ci
+    volumes:
+      - seoul-mysql-data:/var/lib/mysql
+    healthcheck:
+      test:
+        [
+          'CMD-SHELL',
+          'mysqladmin ping -h 127.0.0.1 -u root -p$${MYSQL_ROOT_PASSWORD} --silent',
+        ]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  backend:
+    build:
+      context: .
+      target: prod
+    container_name: seoul-backend
+    restart: unless-stopped
+    # 운영에서는 외부에 직접 노출하지 않고, nginx(호스트)에서만 접근하게 127.0.0.1로 바인딩합니다.
+    # (보안그룹에서는 3000 포트를 열지 않는 구성이 권장)
+    ports:
+      - '127.0.0.1:3000:3000'
+    env_file:
+      - .env
+    depends_on:
+      mysql:
+        condition: service_healthy
+
+volumes:
+  seoul-mysql-data:
+
