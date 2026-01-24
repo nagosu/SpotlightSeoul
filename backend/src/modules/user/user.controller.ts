@@ -11,6 +11,7 @@ import {
 } from '@nestjs/common';
 import {
   ApiBearerAuth,
+  ApiBody,
   ApiCreatedResponse,
   ApiOkResponse,
   ApiOperation,
@@ -31,6 +32,20 @@ export class UserController {
 
   // 회원가입: POST /api/v1/users
   @ApiOperation({ summary: '회원가입' })
+  @ApiBody({
+    type: UserCreateRequest,
+    examples: {
+      basic: {
+        summary: '기본 회원가입',
+        value: {
+          username: 'jinwoo',
+          password: 'P@ssw0rd!',
+          email: 'jinwoo@example.com',
+          location: '서울특별시 중구',
+        },
+      },
+    },
+  })
   @ApiCreatedResponse({ type: UserResponse })
   @Post('users')
   create(@Body() body: UserCreateRequest): Promise<UserResponse> {
@@ -39,6 +54,18 @@ export class UserController {
 
   // 로그인: POST /api/v1/login
   @ApiOperation({ summary: '로그인(AccessToken 발급)' })
+  @ApiBody({
+    type: UserLoginRequest,
+    examples: {
+      basic: {
+        summary: '이메일/비밀번호 로그인',
+        value: {
+          email: 'jinwoo@example.com',
+          password: 'P@ssw0rd!',
+        },
+      },
+    },
+  })
   @ApiCreatedResponse({ type: UserLoginResponse })
   @Post('login')
   login(@Body() body: UserLoginRequest): Promise<UserLoginResponse> {
@@ -58,6 +85,21 @@ export class UserController {
 
   // 회원수정: PUT /api/v1/users (인증 요구 없음)
   @ApiOperation({ summary: '회원수정' })
+  @ApiBody({
+    type: UserUpdateRequest,
+    examples: {
+      basic: {
+        summary: '기본 회원정보 수정',
+        value: {
+          id: '1',
+          username: 'jinwoo',
+          password: 'P@ssw0rd!',
+          email: 'jinwoo@example.com',
+          location: '서울특별시 중구',
+        },
+      },
+    },
+  })
   @ApiOkResponse({ type: UserResponse })
   @Put('users')
   update(@Body() body: UserUpdateRequest): Promise<UserResponse> {
