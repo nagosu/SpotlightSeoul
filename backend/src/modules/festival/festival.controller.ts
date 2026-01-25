@@ -13,6 +13,7 @@ import {
 } from '@nestjs/common';
 import {
   ApiBearerAuth,
+  ApiBody,
   ApiCreatedResponse,
   ApiOkResponse,
   ApiOperation,
@@ -179,6 +180,17 @@ export class FestivalController {
 
   // 3) POST /festivals (검색, REPLACE 포함)
   @ApiOperation({ summary: '타이틀 검색(REPLACE 포함)' })
+  @ApiBody({
+    type: FestivalSearchRequest,
+    examples: {
+      basic: {
+        summary: '타이틀 검색',
+        value: {
+          title: '서울',
+        },
+      },
+    },
+  })
   @ApiQuery({ name: 'page', required: false, example: 0 })
   @ApiQuery({ name: 'size', required: false, example: 20 })
   @ApiCreatedResponse({ type: FestivalSearchPageResponse })
