@@ -3,6 +3,10 @@ services:
     image: mysql:8.4
     container_name: seoul-mysql
     restart: unless-stopped
+    # 운영에서도 DB는 외부에 직접 노출하지 않고(보안그룹 3306 미오픈),
+    # SSH 터널/호스트 내부에서만 접근할 수 있도록 127.0.0.1로만 바인딩합니다.
+    ports:
+      - '127.0.0.1:3306:3306'
     environment:
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
       MYSQL_DATABASE: ${MYSQL_DATABASE}
