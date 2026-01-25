@@ -1,5 +1,6 @@
 .DS_Store
 .env
+.env.*
 
 .idea/**
 *.log!/logs/
@@ -7,3 +8,5 @@
 logs/
 *.log
 
+*.pem
+.cursor/
