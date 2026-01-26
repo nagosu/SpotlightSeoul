@@ -1,32 +1,74 @@
-# Phase 1 작업 보드(태스크 단위)
+# Phase 1 — 문서/규칙 고정(결정사항)
 
-> 상위 문서: `frontend/docs/FRONTEND-UPGRADE-PHASES.md`  
-> 이 폴더는 Phase 1을 **태스크 단위로 쪼개서** “하나씩 완료”할 수 있게 만든 작업 보드입니다.
+## 목표(Why)
+- **작업자가 그대로 따라 할 수 있는 실행 순서(체크리스트)**를 고정합니다.
+- 이후 Phase에서 반복되는 논쟁/혼선을 줄이기 위해 **공통 규칙(데이터 키/성공코드/좌표 파라미터/페이지 기준)**을 먼저 확정합니다.
 
-## 권장 진행 순서
+## 범위(Scope)
+- 문서 규칙/정책만 확정합니다(코드 변경은 Phase 2 이후).
+- 이 Phase는 “개발 환경”이 아니라 “작업 방식”을 고정합니다.
 
-### 0. Phase 1에서 확정해야 할 정책(먼저 결정)
-- `00-decisions.md`
+## 근거(Evidence)
+- 기준 문서: `frontend/docs/FRONTEND-UPGRADE-PHASES.md`
+  - 목적/원칙: 0장
+  - 핵심 API 변화: 1장
+  - 데이터 키 정책(camelCase): 1.1
+  - 201 성공 처리/lat-lot: 2.2 “주의(실전 함정)”
 
-### 1. 환경 변수 / baseURL
-- `10-env-baseurl.md`
-- `11-remove-hardcoded-localhost.md`
+## 선행조건(Dependencies)
+- 없음
 
-### 2. 공통 HTTP 레이어
-- `20-http-client.md`
-- `21-auth-header.md`
-- `22-error-normalization.md`
-- `23-401-entrypoint.md`
+## 작업 체크리스트(아주 상세)
+### A. 문서 운영 원칙(원문 0장) 확정
+- [ ] **최소 변경 원칙**: 먼저 “연결/계약/안정성(운영 가능성)”을 맞추고, UX/구조/성능은 뒤로 미룹니다.
+- [ ] **근거 기반**: “AS-IS(현재 코드)”와 “OpenAPI(계약)”을 근거로만 Phase를 진행합니다.
+- [ ] **표준화 우선**: 데이터 패칭/에러 처리/인증/반응형/접근성은 화면별 구현이 아니라 **공통 규칙**으로 먼저 만들고 재사용합니다.
+- [ ] 각 Phase는 **Definition of Done(DoD)**를 반드시 포함해야 하며, “끝났다고 말할 수 있는 상태”를 명확히 합니다.
 
-### 3. 타입(최소) 고정
-- `30-types-core-responses.md`
-- `31-snakecase-mapping-policy.md`
+### B. API 계약의 “단일 진실 원천” 확정
+- [ ] API 계약은 Swagger/OpenAPI를 기준으로 합니다.
+  - 기준 URL(문서에 명시됨): `GET https://api.spotlight-seoul.shop/api/v1/docs-json` (Swagger UI: `/api/v1/docs`)
+- [ ] 프론트의 모든 요청/응답 타입/에러 처리/인증 요구사항은 **OpenAPI를 우선**으로 합니다.
+- [ ] OpenAPI와 실제 서버 동작이 다르면 “서버 버그/스펙 불일치”로 기록하고, 프론트는 임시 대응 시 **문서에 명시**합니다.
 
-### 4. 개발 재현성 / DX 기준선
-- `40-lockfile-package-manager.md`
-- `41-eslint-ts-baseline.md`
-- `42-quality-gates.md`
+### C. 데이터 키(casing) 규칙 확정 (원문 1.1)
+- [ ] 서버 응답 snake_case는 **프론트 내부 표준 camelCase**로 변환합니다.
+- [ ] UI/상태/컴포넌트는 **camelCase만 사용**합니다(원본 snake_case 참조 금지).
+- [ ] 변환은 “어딘가에서 한 번만” 수행합니다(권장 위치: 공통 HTTP 레이어).
+- [ ] 예외(원본 payload 그대로 저장/로깅)가 필요한 경우만 **명시적으로 허용**합니다.
+- [ ] 대표 변환 예시를 README에 포함합니다(원문 1.1의 목록을 유지).
 
-## Phase 1 최종 완료 체크
-- `90-phase1-dod.md`
+### D. HTTP 성공코드/파라미터 함정 규칙 확정 (원문 2.2 “주의”)
+- [ ] `POST /api/v1/festivals`(타이틀 검색)와 `POST /api/v1/login`은 **성공 시 201**이므로, “201도 성공”으로 처리합니다.
+- [ ] 내 주변 API 쿼리 파라미터는 `lat`(위도), `lot`(경도)이며, 흔히 쓰는 `lng`를 사용하지 않습니다.
 
+### E. 페이지/페이징 기본 규칙(원문 3.1)
+- [ ] `page`는 **0부터 시작(0-based)**을 원칙으로 합니다.
+- [ ] UI 컴포넌트가 1-based를 사용한다면 “UI↔API 변환 규칙”을 문서에 반드시 포함합니다.
+
+### F. 문서 템플릿/섹션 규칙 고정
+모든 Phase README는 아래 섹션을 반드시 포함합니다.
+- [ ] 목표(Why)
+- [ ] 범위(Scope)
+- [ ] 선행조건(Dependencies)
+- [ ] 작업 체크리스트(아주 상세)
+- [ ] Definition of Done(DoD)
+- [ ] 검증 방법(명령어/시나리오/Swagger 기준 비교)
+- [ ] 주의/함정(실전 리스크)
+
+## Definition of Done(DoD)
+- 이 문서 세트를 사용하는 사람이 “무엇을 먼저/나중에 해야 하는지” 혼동하지 않습니다.
+- 아래 4가지 결정사항이 모든 이후 Phase에서 **일관되게 적용**됩니다.
+  - snake_case → camelCase 변환(프론트 내부 표준)
+  - 201도 성공 처리(특정 POST)
+  - `lat/lot` 파라미터명 고정
+  - page 0-based 원칙
+
+## 검증 방법
+- [ ] `frontend/docs/FRONTEND-UPGRADE-PHASES.md` 0장/1.1/2.2 주의/3.1의 규칙이 이 README에 반영되어 있는지 확인합니다.
+- [ ] 팀/작업자가 이후 Phase README를 작성할 때, 위 규칙을 복사/참조할 수 있는지 확인합니다.
+
+## 주의/함정
+- “아키텍처 리팩터링”을 먼저 하지 않습니다. **계약/연결/운영 가능성**이 먼저입니다.
+- 201 성공 처리를 빼먹으면 “로그인/검색이 실패로 처리되는” 치명적인 버그가 생깁니다.
+- `lot`(경도) 파라미터명을 `lng`로 착각하면 내 주변 기능이 정상 동작하지 않습니다.
