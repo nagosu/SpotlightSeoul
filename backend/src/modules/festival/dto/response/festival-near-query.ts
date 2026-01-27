@@ -1,5 +1,5 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsIn, IsInt, IsNumber, IsOptional, IsString, Min } from 'class-validator';
+import { IsIn, IsInt, IsNumber, IsOptional, IsString, Max, Min } from 'class-validator';
 import { FestivalListStatus } from './festival-list-query';
 
 export class FestivalNearQuery {
@@ -33,10 +33,11 @@ export class FestivalNearQuery {
   @Min(0)
   page?: number = 0;
 
-  @ApiPropertyOptional({ default: 20 })
+  @ApiPropertyOptional({ description: '페이지 크기 (최대 100)', default: 20 })
   @IsOptional()
   @IsInt()
   @Min(1)
+  @Max(100)
   size?: number = 20;
 }
 

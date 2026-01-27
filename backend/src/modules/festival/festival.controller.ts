@@ -3,6 +3,7 @@ import {
   Controller,
   DefaultValuePipe,
   Get,
+  HttpCode,
   Param,
   ParseIntPipe,
   Post,
@@ -14,7 +15,6 @@ import {
 import {
   ApiBearerAuth,
   ApiBody,
-  ApiCreatedResponse,
   ApiOkResponse,
   ApiOperation,
   ApiParam,
@@ -40,6 +40,10 @@ import { FestivalSuggestResponse } from './dto/response/festival-suggest.respons
 import { JwtAuthorizationGuard } from '../user/jwt/jwt-authorization.guard';
 import { JwtAuthorization } from '../user/jwt/jwt-authorization.decorator';
 import { UserTokenInfo } from '../user/jwt/user-token-info.type';
+import {
+  ApiAuthResponses,
+  ApiPublicResponses,
+} from '../../common/decorators/api-common-responses.decorator';
 
 @ApiTags('Festival')
 @Controller('festivals')
@@ -48,6 +52,7 @@ export class FestivalController {
 
   @ApiOperation({ summary: '좋아요 토글(추가/취소)' })
   @ApiOkResponse({ type: FestivalLikeToggleResponse })
+  @ApiAuthResponses()
   @ApiBearerAuth()
   @UseGuards(JwtAuthorizationGuard)
   @Put(':id/like')
@@ -62,6 +67,7 @@ export class FestivalController {
 
   @ApiOperation({ summary: '북마크(찜) 토글(추가/취소)' })
   @ApiOkResponse({ type: FestivalBookmarkToggleResponse })
+  @ApiAuthResponses()
   @ApiBearerAuth()
   @UseGuards(JwtAuthorizationGuard)
   @Put(':id/bookmark')
@@ -76,6 +82,7 @@ export class FestivalController {
 
   @ApiOperation({ summary: '내 주변 축제(거리순)' })
   @ApiOkResponse({ type: FestivalNearPageResponse })
+  @ApiPublicResponses()
   @Get('near')
   near(@Query() query: FestivalNearQuery): Promise<FestivalNearPageResponse> {
     return this.festivalService.near(query);
@@ -83,6 +90,7 @@ export class FestivalController {
 
   @ApiOperation({ summary: '검색 자동완성(타이틀)' })
   @ApiOkResponse({ type: FestivalSuggestResponse })
+  @ApiPublicResponses()
   @Get('suggest')
   suggest(@Query() query: FestivalSuggestQuery): Promise<FestivalSuggestResponse> {
     return this.festivalService.suggest(query);
@@ -94,27 +102,40 @@ export class FestivalController {
    */
   @ApiOperation({ summary: '통합 리스트(기간/상태/정렬/페이징)' })
   @ApiOkResponse({ type: FestivalPageResponse })
+  @ApiPublicResponses()
   @Get()
   list(@Query() query: FestivalListQuery): Promise<FestivalPageResponse> {
     return this.festivalService.list(query);
   }
 
-  // 1) GET /festivals/page?offset=0&size=10 (offset은 "페이지 번호")
-  @ApiOperation({ summary: '페이징 목록 조회(offset=페이지 번호)' })
-  @ApiQuery({ name: 'offset', required: true, example: 0 })
-  @ApiQuery({ name: 'size', required: true, example: 10 })
+  // 1) GET /festivals/page?offset=0&size=20 (offset은 "페이지 번호")
+  // [Deprecated] GET /festivals 사용 권장 (page/size 파라미터)
+  @ApiOperation({
+    summary: '[Deprecated] 페이징 목록 조회(offset=페이지 번호)',
+    description:
+      '**Deprecated**: GET /festivals 엔드포인트 사용을 권장합니다.\n\n' +
+      '- offset: 페이지 번호 (0부터 시작)\n' +
+      '- size: 페이지 크기 (기본 20, 최대 100)',
+    deprecated: true,
+  })
+  @ApiQuery({ name: 'offset', required: false, example: 0, description: '페이지 번호 (0부터 시작)' })
+  @ApiQuery({ name: 'size', required: false, example: 20, description: '페이지 크기 (기본 20, 최대 100)' })
   @ApiOkResponse({ type: FestivalPageResponse })
+  @ApiPublicResponses()
   @Get('page')
   getPage(
     @Query('offset', new DefaultValuePipe(0), ParseIntPipe) offset: number,
-    @Query('size', new DefaultValuePipe(10), ParseIntPipe) size: number,
+    @Query('size', new DefaultValuePipe(20), ParseIntPipe) size: number,
   ): Promise<FestivalPageResponse> {
-    return this.festivalService.getPage(offset, size);
+    // size 상한 적용 (DTO 검증이 없으므로 서버 단에서 제한)
+    const clampedSize = Math.min(size, 100);
+    return this.festivalService.getPage(offset, clampedSize);
   }
 
   // 4) GET /festivals/category (QueryString 필터 + pageable)
   @ApiOperation({ summary: '필터 검색' })
   @ApiOkResponse({ type: FestivalFilterPageResponse })
+  @ApiPublicResponses()
   @Get('category')
   getByCategory(@Query() query: FestivalFilterQuery): Promise<FestivalFilterPageResponse> {
     return this.festivalService.filter(query);
@@ -126,6 +147,7 @@ export class FestivalController {
   @ApiQuery({ name: 'page', required: false, example: 0 })
   @ApiQuery({ name: 'size', required: false, example: 20 })
   @ApiOkResponse({ type: FestivalMostPageResponse })
+  @ApiPublicResponses()
   @Get('likes')
   mostLike(
     @Query('likes') likes?: string,
@@ -146,6 +168,7 @@ export class FestivalController {
   @ApiQuery({ name: 'page', required: false, example: 0 })
   @ApiQuery({ name: 'size', required: false, example: 20 })
   @ApiOkResponse({ type: FestivalMostPageResponse })
+  @ApiPublicResponses()
   @Get('views')
   mostView(
     @Query('views') views?: string,
@@ -164,6 +187,7 @@ export class FestivalController {
   @ApiOperation({ summary: '좋아요 +1' })
   @ApiParam({ name: 'id', example: '1' })
   @ApiOkResponse({ type: FestivalLikeResponse })
+  @ApiPublicResponses()
   @Put('likes/:id')
   like(@Param('id') id: string): Promise<FestivalLikeResponse> {
     return this.festivalService.like(id);
@@ -173,12 +197,13 @@ export class FestivalController {
   @ApiOperation({ summary: '상세 조회(조회수 +1)' })
   @ApiParam({ name: 'id', example: '1' })
   @ApiOkResponse({ type: FestivalDetailResponse })
+  @ApiPublicResponses()
   @Get(':id')
   getDetail(@Param('id') id: string): Promise<FestivalDetailResponse> {
     return this.festivalService.getDetail(id);
   }
 
-  // 3) POST /festivals (검색, REPLACE 포함)
+  // 3) POST /festivals (검색, REPLACE 포함) → 200 OK (조회 성격)
   @ApiOperation({ summary: '타이틀 검색(REPLACE 포함)' })
   @ApiBody({
     type: FestivalSearchRequest,
@@ -193,7 +218,9 @@ export class FestivalController {
   })
   @ApiQuery({ name: 'page', required: false, example: 0 })
   @ApiQuery({ name: 'size', required: false, example: 20 })
-  @ApiCreatedResponse({ type: FestivalSearchPageResponse })
+  @HttpCode(200)
+  @ApiOkResponse({ type: FestivalSearchPageResponse })
+  @ApiPublicResponses()
   @Post()
   search(
     @Body() body: FestivalSearchRequest,

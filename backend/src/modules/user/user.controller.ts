@@ -13,6 +13,7 @@ import {
   ApiBearerAuth,
   ApiBody,
   ApiCreatedResponse,
+  ApiNoContentResponse,
   ApiOkResponse,
   ApiOperation,
   ApiTags,
@@ -24,6 +25,10 @@ import { UserUpdateRequest } from './dto/request/user-update.request';
 import { UserResponse } from './dto/response/user.response';
 import { UserLoginResponse } from './dto/response/user-login.response';
 import { JwtAuthorizationGuard } from './jwt/jwt-authorization.guard';
+import {
+  ApiAuthResponses,
+  ApiPublicResponses,
+} from '../../common/decorators/api-common-responses.decorator';
 
 @ApiTags('User')
 @Controller()
@@ -47,12 +52,13 @@ export class UserController {
     },
   })
   @ApiCreatedResponse({ type: UserResponse })
+  @ApiPublicResponses()
   @Post('users')
   create(@Body() body: UserCreateRequest): Promise<UserResponse> {
     return this.userService.create(body);
   }
 
-  // 로그인: POST /api/v1/login
+  // 로그인: POST /api/v1/login → 200 OK (토큰 발급은 리소스 생성이 아님)
   @ApiOperation({ summary: '로그인(AccessToken 발급)' })
   @ApiBody({
     type: UserLoginRequest,
@@ -66,7 +72,9 @@ export class UserController {
       },
     },
   })
-  @ApiCreatedResponse({ type: UserLoginResponse })
+  @HttpCode(200)
+  @ApiOkResponse({ type: UserLoginResponse })
+  @ApiPublicResponses()
   @Post('login')
   login(@Body() body: UserLoginRequest): Promise<UserLoginResponse> {
     // snake_case interceptor로 access_token으로 내려감
@@ -76,6 +84,7 @@ export class UserController {
   // 회원조회: GET /api/v1/users/:userId (인증 요구, Spring처럼 id 일치 검증 X)
   @ApiOperation({ summary: '회원조회' })
   @ApiOkResponse({ type: UserResponse })
+  @ApiAuthResponses()
   @ApiBearerAuth()
   @UseGuards(JwtAuthorizationGuard)
   @Get('users/:userId')
@@ -101,6 +110,7 @@ export class UserController {
     },
   })
   @ApiOkResponse({ type: UserResponse })
+  @ApiPublicResponses()
   @Put('users')
   update(@Body() body: UserUpdateRequest): Promise<UserResponse> {
     return this.userService.update(body);
@@ -108,6 +118,8 @@ export class UserController {
 
   // 회원삭제(소프트삭제): DELETE /api/v1/users/:id -> 204
   @ApiOperation({ summary: '회원삭제(소프트삭제)' })
+  @ApiNoContentResponse({ description: '삭제 성공 (응답 바디 없음)' })
+  @ApiPublicResponses()
   @HttpCode(204)
   @Delete('users/:id')
   async delete(@Param('id') id: string): Promise<void> {
