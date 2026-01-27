@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { Brackets, DataSource, Repository, SelectQueryBuilder } from 'typeorm';
 import { Festival } from '../entity/festival.entity';
 import { FestivalUserBookmark } from '../entity/festival-user-bookmark.entity';
@@ -70,9 +70,13 @@ export class FestivalRepository {
     );
 
     const total = await base.getCount();
-    if (total === 0) throw new BadRequestException('검색결과가 없습니다.');
-
+    // 검색 결과 0건 → 200 OK + 빈 배열 (클라이언트 친화적)
     const totalPageNum = size > 0 ? Math.ceil(total / size) : 0;
+
+    if (total === 0) {
+      return { totalPageNum: 0, postResponses: [] };
+    }
+
     const postResponses = await base
       .orderBy('festival.id', 'DESC')
       .skip(page * size)

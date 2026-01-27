@@ -1,5 +1,5 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
-import { IsInt, IsOptional, IsString, Min } from 'class-validator';
+import { IsInt, IsOptional, IsString, Max, Min } from 'class-validator';
 
 export class FestivalFilterQuery {
   @ApiPropertyOptional({ description: '타이틀(부분 일치)', example: '서울' })
@@ -61,10 +61,11 @@ export class FestivalFilterQuery {
   @Min(0)
   page?: number = 0;
 
-  @ApiPropertyOptional({ description: '페이지 크기', default: 20, example: 20 })
+  @ApiPropertyOptional({ description: '페이지 크기 (최대 100)', default: 20, example: 20 })
   @IsOptional()
   @IsInt()
   @Min(1)
+  @Max(100)
   size?: number = 20;
 }
 
