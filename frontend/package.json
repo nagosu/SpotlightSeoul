@@ -23,7 +23,8 @@
     "react-query": "^3.39.3",
     "react-router-dom": "^6.15.0",
     "recoil": "^0.7.7",
-    "tailwindcss": "^3.3.3"
+    "tailwindcss": "^3.3.3",
+    "uuid": "^13.0.0"
   },
   "devDependencies": {
     "@types/navermaps": "^3.7.0",
