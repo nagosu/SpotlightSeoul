@@ -1,4 +1,4 @@
-import axios, { AxiosError, InternalAxiosRequestConfig } from 'axios';
+import axios, { AxiosError, AxiosHeaders, InternalAxiosRequestConfig } from 'axios';
 import { v4 as uuidv4 } from 'uuid';
 
 // axios 인스턴스 생성
@@ -13,15 +13,19 @@ export const apiClient = axios.create({
 // Request Interceptor
 apiClient.interceptors.request.use(
   (config: InternalAxiosRequestConfig) => {
+    // axios v1에서 headers는 AxiosHeaders일 수 있으므로 안전하게 정규화해서 사용
+    const headers = AxiosHeaders.from(config.headers);
+    config.headers = headers;
+
     // X-Request-Id 헤더 자동 추가 (없는 경우에만)
-    if (!config.headers['X-Request-Id']) {
-      config.headers['X-Request-Id'] = uuidv4();
+    if (!headers.get('X-Request-Id')) {
+      headers.set('X-Request-Id', uuidv4());
     }
 
     // Authorization Bearer 토큰 자동 추가 (로컬스토리지에서 가져오기)
     const token = localStorage.getItem('access_token');
     if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
+      headers.set('Authorization', `Bearer ${token}`);
     }
 
     return config;
