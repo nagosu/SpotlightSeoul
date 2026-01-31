@@ -2,7 +2,7 @@
 export { apiClient, default as api } from './client';
 
 // 공통 타입 export (명시적으로 공개 API만 노출)
-export type { FieldError, ErrorResponse, PageResponse } from './types/common';
+export type { ApiError, FieldError, ErrorResponse, PageResponse } from './types/common';
 
 // Festival 타입 export (명시적으로 공개 API만 노출)
 export type {

@@ -25,6 +25,19 @@ export interface ErrorResponse {
 }
 
 /**
+ * API 에러 (서버 응답 + 클라이언트 메타)
+ */
+export interface ApiError extends ErrorResponse {
+  /** HTTP 메타(디버깅용) */
+  httpStatus?: number;
+  method?: string;
+  url?: string;
+
+  /** 원본 에러(로그/디버깅용) */
+  raw?: unknown;
+}
+
+/**
  * 페이지네이션 응답 포맷
  */
 export interface PageResponse<T> {
