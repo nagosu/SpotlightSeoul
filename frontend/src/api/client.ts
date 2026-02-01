@@ -39,8 +39,8 @@ function normalizeServerError(data: unknown): Partial<ApiError> {
   if (!data || typeof data !== 'object') return {};
   const d = data as Record<string, unknown>;
   return {
-    requestId: (d.request_id ?? d.requestId) as string,
-    statusCode: (d.status_code ?? d.statusCode) as number,
+    request_id: d.request_id as string,
+    status_code: d.status_code as number,
     code: d.code as string,
     message: d.message as string,
     errors: d.errors as FieldError[] | undefined,
@@ -117,13 +117,13 @@ apiClient.interceptors.response.use(
         typeof requestIdFromHeader === 'string' ? requestIdFromHeader : undefined;
 
       const apiError: ApiError = {
-        requestId:
-          normalized.requestId ??
+        request_id:
+          normalized.request_id ??
           requestIdFromHeaderString ??
           requestIdFromRequest ??
           'unknown',
-        statusCode:
-          normalized.statusCode ?? error.response.status ?? 0,
+        status_code:
+          normalized.status_code ?? error.response.status ?? 0,
         code: normalized.code ?? 'ERROR',
         message: normalized.message ?? '요청 중 오류가 발생했습니다.',
         errors: normalized.errors,
@@ -139,8 +139,8 @@ apiClient.interceptors.response.use(
     if (error.request) {
       // 요청은 보냈지만 응답이 없는 경우 (네트워크 오류)
       const apiError: ApiError = {
-        requestId: requestIdFromRequest ?? 'unknown',
-        statusCode: 0,
+        request_id: requestIdFromRequest ?? 'unknown',
+        status_code: 0,
         code: 'NETWORK_ERROR',
         message: '네트워크 연결을 확인해주세요.',
         httpStatus: 0,
@@ -153,8 +153,8 @@ apiClient.interceptors.response.use(
 
     // 요청 설정 중 오류 발생
     const apiError: ApiError = {
-      requestId: requestIdFromRequest ?? 'unknown',
-      statusCode: 0,
+      request_id: requestIdFromRequest ?? 'unknown',
+      status_code: 0,
       code: 'UNKNOWN_ERROR',
       message: '알 수 없는 오류가 발생했습니다.',
       httpStatus: 0,

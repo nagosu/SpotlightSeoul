@@ -13,9 +13,9 @@ export interface FieldError {
  */
 export interface ErrorResponse {
   /** 요청 추적 ID */
-  requestId: string;
+  request_id: string;
   /** HTTP 상태 코드 (400, 401, 404, 500 등) */
-  statusCode: number;
+  status_code: number;
   /** 에러 코드 (분기용) - 예: "VALIDATION_ERROR", "NOT_FOUND" */
   code: string;
   /** 에러 메시지 (사용자 노출 가능) */
