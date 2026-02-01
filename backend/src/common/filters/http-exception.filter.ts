@@ -90,8 +90,8 @@ function extractDetails(exception: unknown): {
 /**
  * 전역 예외 필터
  * - 모든 예외를 표준 에러 응답 포맷으로 변환
- * - 응답 형태: { requestId, statusCode, code, message, errors? }
- * - SnakeCaseInterceptor에 의해 snake_case로 최종 변환됨
+ * - 응답 형태(snake_case): { request_id, status_code, code, message, errors? }
+ * - 예외 필터에서 직접 snake_case로 작성합니다. (인터셉터 미적용)
  */
 @Catch()
 export class HttpExceptionFilter implements ExceptionFilter {
