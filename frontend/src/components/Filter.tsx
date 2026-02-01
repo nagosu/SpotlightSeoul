@@ -69,9 +69,9 @@ const SubField = [
 function Filter({
   setIsFree,
   setField,
-  setSubField,
-  setStartDate,
-  setEndDate,
+  setSubField: _setSubField,
+  setStartDate: _setStartDate,
+  setEndDate: _setEndDate,
 }: {
   setIsFree: (cost: string) => void;
   setField: (field: string) => void;
