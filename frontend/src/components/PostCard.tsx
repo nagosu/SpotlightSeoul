@@ -2,10 +2,10 @@ import { useNavigate } from 'react-router-dom';
 
 function PostCard({
   id,
-  orgName,
+  orgName: _orgName,
   mainImg,
-  startDate,
-  endDate,
+  startDate: _startDate,
+  endDate: _endDate,
   title,
   category,
   date,
