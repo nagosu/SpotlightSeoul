@@ -9,6 +9,7 @@ import NearbyPage from './pages/NearbyPage';
 import MyPage from './pages/MyPage';
 import Layout from './layouts/Layout';
 import AuthLayout from './layouts/AuthLayout';
+import ProtectedRoute from './components/ProtectedRoute';
 
 function App() {
   return (
@@ -21,7 +22,14 @@ function App() {
             <Route path="/explore" element={<ExplorePage />} />
             <Route path="/nearby" element={<NearbyPage />} />
             <Route path="/festivals/:id" element={<DetailPage />} />
-            <Route path="/mypage" element={<MyPage />} />
+            <Route
+              path="/mypage"
+              element={
+                <ProtectedRoute>
+                  <MyPage />
+                </ProtectedRoute>
+              }
+            />
           </Route>
 
           {/* 인증 레이아웃 (Nav+Footer 숨김) */}
