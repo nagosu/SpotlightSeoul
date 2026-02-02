@@ -4,19 +4,32 @@ import MainPage from './pages/MainPage';
 import DetailPage from './pages/DetailPage';
 import LoginPage from './pages/LoginPage';
 import SignupPage from './pages/SignupPage';
-import Footer from './components/Footer';
+import ExplorePage from './pages/ExplorePage';
+import NearbyPage from './pages/NearbyPage';
+import MyPage from './pages/MyPage';
+import Layout from './layouts/Layout';
+import AuthLayout from './layouts/AuthLayout';
 
 function App() {
   return (
     <RecoilRoot>
       <BrowserRouter>
         <Routes>
-          <Route path="/" element={<MainPage />} />
-          <Route path="/detail/:id" element={<DetailPage />} />
-          <Route path="/signup" element={<SignupPage />} />
-          <Route path="/login" element={<LoginPage />} />
+          {/* 기본 레이아웃 (Nav+Footer) */}
+          <Route element={<Layout />}>
+            <Route path="/" element={<MainPage />} />
+            <Route path="/explore" element={<ExplorePage />} />
+            <Route path="/nearby" element={<NearbyPage />} />
+            <Route path="/festivals/:id" element={<DetailPage />} />
+            <Route path="/mypage" element={<MyPage />} />
+          </Route>
+
+          {/* 인증 레이아웃 (Nav+Footer 숨김) */}
+          <Route element={<AuthLayout />}>
+            <Route path="/auth/login" element={<LoginPage />} />
+            <Route path="/auth/signup" element={<SignupPage />} />
+          </Route>
         </Routes>
-        <Footer />
       </BrowserRouter>
     </RecoilRoot>
   );

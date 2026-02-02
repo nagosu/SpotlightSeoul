@@ -37,7 +37,7 @@ function PostCard({
   return (
     <div
       onClick={() => {
-        navigate(`/detail/${id}`);
+        navigate(`/festivals/${id}`);
         window.scrollTo(0, 0);
       }}
       className="flex flex-col items-center justify-center"

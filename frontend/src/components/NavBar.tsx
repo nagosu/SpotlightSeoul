@@ -98,7 +98,7 @@ function NavBar() {
         <div className="flex basis-1/4 justify-center">
           <button
             onClick={() => {
-              navigate('/login');
+              navigate('/auth/login');
             }}
             className="duration-400 rounded-md border-2 border-[#06439F] px-3 py-2 font-LexendDeca text-[#06439F] hover:border-[#06439F] hover:bg-[#f7f7f7]"
           >

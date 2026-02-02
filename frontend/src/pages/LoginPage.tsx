@@ -39,7 +39,7 @@ function LoginPage() {
           <button
             className="rounded-md border border-[#06439F] bg-[#ffffff] py-2 font-light text-[#06439F]"
             onClick={() => {
-              navigate('/signup');
+              navigate('/auth/signup');
             }}
           >
             Sign up
