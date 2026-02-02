@@ -1,4 +1,3 @@
-import NavBar from '../components/NavBar';
 import Banner from '../components/Banner';
 import Filter from '../components/Filter';
 import PostCard from '../components/PostCard';
@@ -137,8 +136,6 @@ function MainPage() {
 
   return (
     <div>
-      {/* 상단바 */}
-      <NavBar />
       {/* 배너 */}
       <Banner />
       {/* 드롭다운 필터링 */}

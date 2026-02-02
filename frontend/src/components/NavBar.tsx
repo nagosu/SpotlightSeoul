@@ -5,6 +5,7 @@ import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { useSetRecoilState } from 'recoil';
 import { searchResultsState, PostCardData } from '../RecoilState';
+import { useAuthStore } from '../stores/useAuthStore';
 
 type PostResponse = {
   id: number;
@@ -27,6 +28,8 @@ function NavBar() {
   const [searchTitle, setSearchTitle] = useState<string>('');
   const setSearchResults = useSetRecoilState(searchResultsState);
   const navigate = useNavigate();
+  const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
+  const logout = useAuthStore((s) => s.logout);
 
   const inputSearchHandler = (e: React.ChangeEvent<HTMLInputElement>) => {
     e.preventDefault();
@@ -96,17 +99,28 @@ function NavBar() {
           />
         </div>
         <div className="flex basis-1/4 justify-center">
-          <button
-            onClick={() => {
-              navigate('/login');
-            }}
-            className="duration-400 rounded-md border-2 border-[#06439F] px-3 py-2 font-LexendDeca text-[#06439F] hover:border-[#06439F] hover:bg-[#f7f7f7]"
-          >
-            Login
-          </button>
-          {/* <button className="duration-400 rounded-md border-2 border-[#FFDB59] px-3 py-2 font-LexendDeca text-[#FFDB59] hover:border-[#EDC431] hover:bg-[#fffdfd] hover:text-[#EDC431]">
-          Logout
-        </button> */}
+          {isAuthenticated ? (
+            <button
+              type="button"
+              onClick={() => {
+                logout();
+                navigate('/');
+              }}
+              className="duration-400 rounded-md border-2 border-[#FFDB59] px-3 py-2 font-LexendDeca text-[#FFDB59] hover:border-[#EDC431] hover:bg-[#fffdfd] hover:text-[#EDC431]"
+            >
+              Logout
+            </button>
+          ) : (
+            <button
+              type="button"
+              onClick={() => {
+                navigate('/auth/login');
+              }}
+              className="duration-400 rounded-md border-2 border-[#06439F] px-3 py-2 font-LexendDeca text-[#06439F] hover:border-[#06439F] hover:bg-[#f7f7f7]"
+            >
+              Login
+            </button>
+          )}
         </div>
       </div>
     </div>
