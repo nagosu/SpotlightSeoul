@@ -12,43 +12,48 @@ import MyPage from './pages/MyPage';
 import Layout from './layouts/Layout';
 import AuthLayout from './layouts/AuthLayout';
 import ProtectedRoute from './components/ProtectedRoute';
+import ErrorBoundary from './components/ErrorBoundary';
+import GlobalSpinner from './components/GlobalSpinner';
 import queryClient from './lib/queryClient';
 
 function App() {
   return (
-    <QueryClientProvider client={queryClient}>
-      <RecoilRoot>
-        <BrowserRouter>
-          <Routes>
-            {/* 기본 레이아웃 (Nav+Footer) */}
-            <Route element={<Layout />}>
-              <Route path="/" element={<MainPage />} />
-              <Route path="/explore" element={<ExplorePage />} />
-              <Route path="/nearby" element={<NearbyPage />} />
-              <Route path="/festivals/:id" element={<DetailPage />} />
-              <Route
-                path="/mypage"
-                element={
-                  <ProtectedRoute>
-                    <MyPage />
-                  </ProtectedRoute>
-                }
-              />
-            </Route>
+    <ErrorBoundary>
+      <QueryClientProvider client={queryClient}>
+        <RecoilRoot>
+          <BrowserRouter>
+            <Routes>
+              {/* 기본 레이아웃 (Nav+Footer) */}
+              <Route element={<Layout />}>
+                <Route path="/" element={<MainPage />} />
+                <Route path="/explore" element={<ExplorePage />} />
+                <Route path="/nearby" element={<NearbyPage />} />
+                <Route path="/festivals/:id" element={<DetailPage />} />
+                <Route
+                  path="/mypage"
+                  element={
+                    <ProtectedRoute>
+                      <MyPage />
+                    </ProtectedRoute>
+                  }
+                />
+              </Route>
 
-            {/* 인증 레이아웃 (Nav+Footer 숨김) */}
-            <Route element={<AuthLayout />}>
-              <Route path="/auth/login" element={<LoginPage />} />
-              <Route path="/auth/signup" element={<SignupPage />} />
-            </Route>
-          </Routes>
-        </BrowserRouter>
-      </RecoilRoot>
+              {/* 인증 레이아웃 (Nav+Footer 숨김) */}
+              <Route element={<AuthLayout />}>
+                <Route path="/auth/login" element={<LoginPage />} />
+                <Route path="/auth/signup" element={<SignupPage />} />
+              </Route>
+            </Routes>
+          </BrowserRouter>
+        </RecoilRoot>
 
-      {import.meta.env.DEV ? (
-        <ReactQueryDevtools initialIsOpen={false} />
-      ) : null}
-    </QueryClientProvider>
+        <GlobalSpinner />
+        {import.meta.env.DEV ? (
+          <ReactQueryDevtools initialIsOpen={false} />
+        ) : null}
+      </QueryClientProvider>
+    </ErrorBoundary>
   );
 }
 
