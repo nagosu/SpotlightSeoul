@@ -1,107 +1,141 @@
-import { useMemo, useState } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
-import LogoImg from '../assets/images/png/Logo.png';
-import loginApi from '../api/auth';
-import { useAuthStore } from '../stores/useAuthStore';
+import { useState } from 'react';
+import type { FormEvent } from 'react';
+import { Link } from 'react-router-dom';
+import { Button, Input } from '@/components/ui';
+import { mockLoginError, mockLoginRequest, mockLoginResponse } from '@/mocks/users';
+
+function delay(ms: number) {
+  return new Promise<void>((resolve) => {
+    window.setTimeout(() => resolve(), ms);
+  });
+}
+
+type LoginErrors = {
+  email?: string;
+  password?: string;
+  form?: string;
+};
 
 function LoginPage() {
-  const navigate = useNavigate();
-  const location = useLocation();
-  const authLogin = useAuthStore((s) => s.login);
+  const emailId = 'login-email';
+  const passwordId = 'login-password';
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [errors, setErrors] = useState<LoginErrors>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [isSuccess, setIsSuccess] = useState(false);
 
-  const returnTo = useMemo(() => {
-    const params = new URLSearchParams(location.search);
-    const v = params.get('returnTo');
-    return v && v.startsWith('/') ? v : '/';
-  }, [location.search]);
+  const validate = (): LoginErrors => {
+    const next: LoginErrors = {};
+    if (!email.trim()) next.email = '이메일을 입력해주세요.';
+    if (!password) next.password = '비밀번호를 입력해주세요.';
+    return next;
+  };
 
-  const canSubmit =
-    email.trim().length > 0 && password.length > 0 && !isSubmitting;
+  const handleSubmit = async (e: FormEvent) => {
+    e.preventDefault();
+    setIsSuccess(false);
 
-  const handleSubmit = async () => {
-    if (!canSubmit) return;
+    const nextErrors = validate();
+    setErrors(nextErrors);
+
+    if (nextErrors.email) {
+      document.getElementById(emailId)?.focus();
+      return;
+    }
+    if (nextErrors.password) {
+      document.getElementById(passwordId)?.focus();
+      return;
+    }
+
     setIsSubmitting(true);
-    setErrorMessage(null);
-
     try {
-      const res = await loginApi({ email: email.trim(), password });
-      authLogin(res.access_token);
-      navigate(returnTo, { replace: true });
-    } catch (e) {
-      // apiClient는 실패 시 ApiError로 정규화합니다.
-      const message =
-        typeof e === 'object' && e != null && 'message' in e
-          ? String((e as { message?: unknown }).message ?? '')
-          : '';
-      setErrorMessage(
-        message || '로그인에 실패했습니다. 입력 정보를 확인해주세요.',
-      );
+      await delay(1000);
+
+      const ok =
+        email.trim() === mockLoginRequest.email && password === mockLoginRequest.password;
+
+      if (!ok) {
+        setErrors({ form: mockLoginError.message });
+        return;
+      }
+
+      console.log('[mock] login success', mockLoginResponse);
+      setErrors({});
+      setIsSuccess(true);
     } finally {
       setIsSubmitting(false);
     }
   };
 
   return (
-    <div className="bg-loginimg w-full bg-[#ffffff]">
-      <div className="flex justify-center">
-        <div className="">
-          <img
-            src={LogoImg}
-            alt="login"
-            className="flex max-h-screen items-center justify-center"
-          />
-        </div>
-        <div className="ml-10 flex w-72 flex-col justify-center space-y-4 font-LexendDeca">
-          <div className="mb-3 text-[30pt] font-medium text-[#06439F]">
-            Login
-          </div>
-          <input
-            className="rounded-md bg-[#EAF0F7] px-2 py-2 font-light outline-none "
-            type="text"
-            placeholder="Email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            autoComplete="email"
-            aria-label="이메일"
-          />
-          <input
-            className="rounded-md bg-[#EAF0F7] px-2 py-2 font-light outline-none "
-            type="password"
-            placeholder="Password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            autoComplete="current-password"
-            aria-label="비밀번호"
-          />
-          {errorMessage ? (
-            <div className="text-sm text-red-600" role="alert">
-              {errorMessage}
+    <div className="space-y-6">
+      <header className="text-center">
+        <h1 className="font-LexendDeca text-3xl font-semibold text-brand-primary">
+          SpotlightSeoul
+        </h1>
+        <p className="mt-1 text-sm text-text-muted">서울의 축제를 한눈에</p>
+      </header>
+
+      <section className="rounded-card border border-border-default bg-surface-0 p-6 shadow-soft">
+        <form className="space-y-4" onSubmit={handleSubmit}>
+          {errors.form ? (
+            <div
+              role="alert"
+              className="rounded-control border border-[#EF4444] bg-[#FEF2F2] p-3 text-sm text-[#B91C1C]"
+            >
+              {errors.form}
             </div>
           ) : null}
-          <button
-            className="rounded-md bg-[#06439F] py-2 font-light text-white disabled:opacity-60"
-            type="button"
-            disabled={!canSubmit}
-            onClick={handleSubmit}
-          >
-            {isSubmitting ? 'Logging in...' : 'Login'}
-          </button>
-          <button
-            className="rounded-md border border-[#06439F] bg-[#ffffff] py-2 font-light text-[#06439F]"
-            type="button"
-            onClick={() => {
-              navigate('/auth/signup');
-            }}
-          >
-            Sign up
-          </button>
-        </div>
-      </div>
+
+          {isSuccess ? (
+            <div className="rounded-control border border-[#10B981] bg-[#ECFDF5] p-3 text-sm text-[#065F46]">
+              로그인에 성공했습니다. (모의)
+            </div>
+          ) : null}
+
+          <Input
+            id={emailId}
+            type="email"
+            label="이메일"
+            placeholder="you@example.com"
+            autoComplete="email"
+            value={email}
+            onChange={(ev) => setEmail(ev.target.value)}
+            errorText={errors.email}
+            required
+            disabled={isSubmitting}
+          />
+
+          <Input
+            id={passwordId}
+            type="password"
+            label="비밀번호"
+            placeholder="비밀번호를 입력하세요"
+            autoComplete="current-password"
+            value={password}
+            onChange={(ev) => setPassword(ev.target.value)}
+            errorText={errors.password}
+            required
+            disabled={isSubmitting}
+          />
+
+          <Button type="submit" className="w-full" loading={isSubmitting}>
+            로그인
+          </Button>
+
+          <p className="text-center text-sm text-text-muted">
+            계정이 없나요?{' '}
+            <Link
+              to="/auth/signup"
+              className="font-semibold text-brand-primary hover:underline"
+            >
+              회원가입
+            </Link>
+          </p>
+        </form>
+      </section>
     </div>
   );
 }
