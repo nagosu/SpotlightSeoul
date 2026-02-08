@@ -1,27 +1,40 @@
-import githublogo from '../assets/images/svg/githublogo.svg';
-import mediumlogo from '../assets/images/svg/mediumlogo.svg';
+import PageContainer from './ui/PageContainer';
 
 function Footer() {
   return (
-    <div className="sticky z-50">
-      <div className="mx-auto flex items-center justify-center space-x-80 bg-[#FAFAFA] py-6 font-LexendDeca">
+    <footer className="border-t border-border-default bg-surface-1">
+      <PageContainer className="flex flex-col gap-3 py-6 md:flex-row md:items-center md:justify-between">
         <div className="font-LexendDeca text-sm font-semibold">
-          <span className="text-[#06439F]">Spotlight</span>
-          <span className="text-[#FFD600]">Seoul</span>
+          <span className="text-brand-primary">Spotlight</span>
+          <span className="text-brand-accent">Seoul</span>
         </div>
-        <span className="text-xs font-light">
-          © 2023 Techeer Team Joon Project by SpotlightSeoul
-        </span>
-        <div className="flex space-x-2">
-          <button>
-            <img className="w-4" src={githublogo} alt="githublogo" />
+
+        <p className="text-xs text-text-muted">
+          © {new Date().getFullYear()} SpotlightSeoul. All rights reserved.
+        </p>
+
+        <div className="flex gap-3 text-xs text-text-muted">
+          <button
+            type="button"
+            className="rounded-md px-1 py-0.5 hover:bg-surface-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary focus-visible:ring-offset-2"
+            onClick={() => {
+              // 퍼블리싱 단계: 실제 링크는 추후 연결합니다.
+            }}
+          >
+            이용약관
           </button>
-          <button>
-            <img className="w-4" src={mediumlogo} alt="mediumlogo" />
+          <button
+            type="button"
+            className="rounded-md px-1 py-0.5 hover:bg-surface-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary focus-visible:ring-offset-2"
+            onClick={() => {
+              // 퍼블리싱 단계: 실제 링크는 추후 연결합니다.
+            }}
+          >
+            개인정보처리방침
           </button>
         </div>
-      </div>
-    </div>
+      </PageContainer>
+    </footer>
   );
 }
 

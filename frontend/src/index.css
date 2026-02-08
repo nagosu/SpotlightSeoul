@@ -11,3 +11,27 @@
   font-family: 'Pretendard';
   src: url('./assets/fonts/PretendardVariable.ttf');
 }
+
+@layer base {
+  html {
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    @apply bg-surface-1 font-Pretendard text-text-default antialiased;
+  }
+
+  a {
+    @apply text-inherit;
+  }
+}
+
+@layer utilities {
+  /* Tailwind line-clamp 플러그인을 쓰지 않고 2줄 클램프 유틸 제공 */
+  .line-clamp-2 {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+}
