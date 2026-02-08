@@ -34,10 +34,16 @@ export type { ErrorStateProps } from './ErrorState';
 export { default as Modal } from './Modal';
 export type { ModalProps } from './Modal';
 
+export { default as BottomSheet } from './BottomSheet';
+export type { BottomSheetProps } from './BottomSheet';
+
 export { default as Toast } from './Toast';
 export type { ToastItem, ToastVariant } from './Toast';
 
 export { ToastProvider, useToast } from './ToastProvider';
+
+export { default as Pagination } from './Pagination';
+export type { PaginationProps } from './Pagination';
 
 export { default as PageContainer } from './PageContainer';
 export type { PageContainerProps } from './PageContainer';

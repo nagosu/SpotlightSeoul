@@ -15,6 +15,7 @@ export type InputProps = {
   required?: boolean;
   disabled?: boolean;
   onChange?: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  onKeyDown?: (e: React.KeyboardEvent<HTMLInputElement>) => void;
   onBlur?: (e: React.FocusEvent<HTMLInputElement>) => void;
   onFocus?: (e: React.FocusEvent<HTMLInputElement>) => void;
   className?: string;
@@ -48,6 +49,7 @@ export default function Input({
   disabled,
   required,
   onChange,
+  onKeyDown,
   onBlur,
   onFocus,
 }: InputProps) {
@@ -98,6 +100,7 @@ export default function Input({
           inputMode={inputMode}
           maxLength={maxLength}
           onChange={onChange}
+          onKeyDown={onKeyDown}
           onBlur={onBlur}
           onFocus={onFocus}
           disabled={disabled}
