@@ -16,6 +16,9 @@ export type { FilterChipProps } from './FilterChip';
 export { default as FestivalCard } from './FestivalCard';
 export type { FestivalCardProps } from './FestivalCard';
 
+export { default as RankingCard } from './RankingCard';
+export type { RankingCardProps } from './RankingCard';
+
 export { default as SectionHeader } from './SectionHeader';
 export type { SectionHeaderProps } from './SectionHeader';
 
