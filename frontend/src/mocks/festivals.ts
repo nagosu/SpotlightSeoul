@@ -282,6 +282,56 @@ export const mockFestivalDetail: FestivalDetailResponse = {
   org_link: 'https://example.com',
 };
 
+/**
+ * Detail 퍼블리싱용 mock 변형
+ * - /festivals/2: 이미지 있음
+ * - /festivals/3: 소개(content) 없음
+ * - /festivals/4: 지도(lat/lot) 없음
+ */
+export const mockFestivalDetailWithImage: FestivalDetailResponse = {
+  ...mockFestivalDetail,
+  id: '2',
+  title: '이미지 포함: 서울 야외 영화제',
+  place: '남산공원',
+  main_img: picsum('detail-2-main', 1200, 750),
+  thumb_img: picsum('detail-2-thumb', 640, 400),
+  major_code_name: '기타',
+  gu_name: '용산구',
+  festival_view: 4200,
+  festival_like: 530,
+  is_free: 'N',
+  content: '남산 야경과 함께 즐기는 야외 영화 상영 행사입니다.',
+  org_link: 'https://example.com/detail-2',
+};
+
+export const mockFestivalDetailNoContent: FestivalDetailResponse = {
+  ...mockFestivalDetail,
+  id: '3',
+  title: '소개 없음: 도심 전시 프리뷰',
+  place: 'DDP',
+  major_code_name: '전시',
+  gu_name: '중구',
+  festival_view: 980,
+  festival_like: 120,
+  content: null,
+  org_link: 'https://example.com/detail-3',
+};
+
+export const mockFestivalDetailNoMap: FestivalDetailResponse = {
+  ...mockFestivalDetail,
+  id: '4',
+  title: '지도 없음: 주말 공예 체험',
+  place: '성수동 공방',
+  major_code_name: '교육/체험',
+  gu_name: '성동구',
+  festival_view: 310,
+  festival_like: 64,
+  address: '서울특별시 성동구 연무장길 00',
+  lat: null,
+  lot: null,
+  org_link: 'https://example.com/detail-4',
+};
+
 export const mockFestivalSearchPage: PageResponse<FestivalSearchResponse> = {
   total_page_num: 3,
   post_responses: [
