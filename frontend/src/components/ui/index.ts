@@ -25,6 +25,9 @@ export type { RankingCardProps } from './RankingCard';
 export { default as SectionHeader } from './SectionHeader';
 export type { SectionHeaderProps } from './SectionHeader';
 
+export { default as Tabs } from './Tabs';
+export type { TabsProps, TabItem } from './Tabs';
+
 export { default as Skeleton } from './Skeleton';
 export type { SkeletonProps, SkeletonVariant } from './Skeleton';
 
