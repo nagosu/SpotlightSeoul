@@ -16,6 +16,9 @@ export type { FilterChipProps } from './FilterChip';
 export { default as FestivalCard } from './FestivalCard';
 export type { FestivalCardProps } from './FestivalCard';
 
+export { default as NearbyFestivalCard } from './NearbyFestivalCard';
+export type { NearbyFestivalCardProps } from './NearbyFestivalCard';
+
 export { default as RankingCard } from './RankingCard';
 export type { RankingCardProps } from './RankingCard';
 
