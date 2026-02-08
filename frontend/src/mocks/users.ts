@@ -1,11 +1,14 @@
 import type {
   ErrorResponse,
+  FestivalResponse,
+  PageResponse,
   UserCreateRequest,
   UserLoginRequest,
   UserLoginResponse,
   UserResponse,
 } from '@/api/types';
 import type { SelectOption } from '@/components/ui';
+import { mockFestivalListPage } from '@/mocks/festivals';
 
 export const mockUser: UserResponse = {
   id: 'u_1',
@@ -74,3 +77,14 @@ export const SEOUL_GU_OPTIONS: SelectOption[] = [
   { label: '중구', value: '중구' },
   { label: '중랑구', value: '중랑구' },
 ];
+
+export const mockBookmarkPage: PageResponse<FestivalResponse> = {
+  total_page_num: 2,
+  // 페이지네이션 UI 테스트를 위해 2페이지 분량(4개 * 2) 정도를 준비합니다.
+  post_responses: mockFestivalListPage.post_responses.slice(0, 8),
+};
+
+export const mockBookmarkEmpty: PageResponse<FestivalResponse> = {
+  total_page_num: 0,
+  post_responses: [],
+};
