@@ -28,7 +28,8 @@ export default function FestivalCard({
 }: FestivalCardProps) {
   const region = festival.gu_name ?? festival.address ?? '지역 정보 없음';
   const period = formatPeriod(festival.strt_date, festival.end_date);
-  const hasThumb = Boolean(festival.thumb_img);
+  const imageSrc = festival.thumb_img ?? festival.main_img;
+  const hasImage = Boolean(imageSrc);
 
   return (
     <Link
@@ -41,9 +42,9 @@ export default function FestivalCard({
     >
       <div className="overflow-hidden rounded-card">
         <div className="relative aspect-[16/10] w-full">
-          {hasThumb ? (
+          {hasImage ? (
             <img
-              src={festival.thumb_img ?? undefined}
+              src={imageSrc ?? undefined}
               alt={festival.title ?? '축제 이미지'}
               className="h-full w-full object-cover"
               loading="lazy"

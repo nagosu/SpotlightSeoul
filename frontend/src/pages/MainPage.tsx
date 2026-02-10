@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Button,
@@ -11,12 +11,10 @@ import {
   Skeleton,
 } from '@/components/ui';
 import {
-  mockFestivalListPage,
-  mockFestivalMostLikePage,
-  mockFestivalMostViewPage,
-} from '@/mocks/festivals';
-
-type SectionStatus = 'loading' | 'error' | 'empty' | 'success';
+  useFestivalListQuery,
+  useMostLikedFestivalsQuery,
+  useMostViewedFestivalsQuery,
+} from '@/hooks';
 
 function cx(...classes: Array<string | false | null | undefined>) {
   return classes.filter(Boolean).join(' ');
@@ -25,49 +23,50 @@ function cx(...classes: Array<string | false | null | undefined>) {
 function MainPage() {
   const navigate = useNavigate();
 
-  const [latestStatus, setLatestStatus] = useState<SectionStatus>('loading');
-  const [likeStatus, setLikeStatus] = useState<SectionStatus>('loading');
-  const [viewStatus, setViewStatus] = useState<SectionStatus>('loading');
+  const {
+    data: latestData,
+    isLoading: latestLoading,
+    isError: latestError,
+    refetch: refetchLatest,
+  } = useFestivalListQuery({
+    sort: 'recent',
+    status: 'ongoing',
+    page: 0,
+    size: 6,
+  });
 
-  const latestSkeletonKeys = ['latest-1', 'latest-2', 'latest-3'];
-  const listSkeletonKeys = ['list-1', 'list-2', 'list-3', 'list-4', 'list-5'];
+  const {
+    data: likedData,
+    isLoading: likeLoading,
+    isError: likeError,
+    refetch: refetchLike,
+  } = useMostLikedFestivalsQuery({
+    page: 0,
+    size: 5,
+  });
 
-  const runLatest = useCallback(() => {
-    setLatestStatus('loading');
-    window.setTimeout(() => {
-      setLatestStatus(
-        mockFestivalListPage.post_responses.length > 0 ? 'success' : 'empty',
-      );
-    }, 500);
-  }, []);
+  const {
+    data: viewedData,
+    isLoading: viewLoading,
+    isError: viewError,
+    refetch: refetchView,
+  } = useMostViewedFestivalsQuery({
+    page: 0,
+    size: 5,
+  });
 
-  const runLike = useCallback(() => {
-    setLikeStatus('loading');
-    window.setTimeout(() => {
-      setLikeStatus(
-        mockFestivalMostLikePage.post_responses.length > 0
-          ? 'success'
-          : 'empty',
-      );
-    }, 500);
-  }, []);
-
-  const runView = useCallback(() => {
-    setViewStatus('loading');
-    window.setTimeout(() => {
-      setViewStatus(
-        mockFestivalMostViewPage.post_responses.length > 0
-          ? 'success'
-          : 'empty',
-      );
-    }, 500);
-  }, []);
-
-  useEffect(() => {
-    runLatest();
-    runLike();
-    runView();
-  }, [runLatest, runLike, runView]);
+  const latestFestivals = useMemo(
+    () => latestData?.post_responses ?? [],
+    [latestData],
+  );
+  const likedFestivals = useMemo(
+    () => likedData?.post_responses ?? [],
+    [likedData],
+  );
+  const viewedFestivals = useMemo(
+    () => viewedData?.post_responses ?? [],
+    [viewedData],
+  );
 
   return (
     <div className="min-h-screen bg-surface-1">
@@ -126,11 +125,11 @@ function MainPage() {
             />
 
             <div className="mt-4">
-              {latestStatus === 'loading' ? (
+              {latestLoading ? (
                 <div className="flex gap-3 overflow-x-auto pb-2 pr-4 md:grid md:grid-cols-3 md:gap-4 md:overflow-visible md:pr-0">
-                  {latestSkeletonKeys.map((key) => (
+                  {Array.from({ length: 3 }, (_, idx) => (
                     <div
-                      key={key}
+                      key={`latest-skeleton-${idx}`}
                       className="min-w-[260px] snap-start md:min-w-0"
                     >
                       <Skeleton variant="card" />
@@ -139,15 +138,15 @@ function MainPage() {
                 </div>
               ) : null}
 
-              {latestStatus === 'error' ? (
+              {latestError ? (
                 <ErrorState
                   title="데이터를 불러올 수 없습니다"
                   description="잠시 후 다시 시도해주세요."
-                  onRetry={runLatest}
+                  onRetry={refetchLatest}
                 />
               ) : null}
 
-              {latestStatus === 'empty' ? (
+              {!latestLoading && !latestError && latestFestivals.length === 0 ? (
                 <EmptyState
                   title="표시할 행사가 없습니다"
                   description="조건을 바꿔서 탐색해보세요."
@@ -158,9 +157,9 @@ function MainPage() {
                 />
               ) : null}
 
-              {latestStatus === 'success' ? (
+              {!latestLoading && !latestError && latestFestivals.length > 0 ? (
                 <div className="flex snap-x snap-mandatory gap-3 overflow-x-auto pb-2 pr-4 md:grid md:grid-cols-3 md:gap-4 md:overflow-visible md:pr-0">
-                  {mockFestivalListPage.post_responses.map((festival) => (
+                  {latestFestivals.map((festival) => (
                     <div
                       key={festival.id}
                       className="min-w-[260px] snap-start md:min-w-0"
@@ -183,23 +182,27 @@ function MainPage() {
             />
 
             <div className="mt-4">
-              {likeStatus === 'loading' ? (
+              {likeLoading ? (
                 <div className="space-y-3">
-                  {listSkeletonKeys.map((key) => (
-                    <Skeleton key={key} variant="listRow" className="h-24" />
+                  {Array.from({ length: 5 }, (_, idx) => (
+                    <Skeleton
+                      key={`like-skeleton-${idx}`}
+                      variant="listRow"
+                      className="h-24"
+                    />
                   ))}
                 </div>
               ) : null}
 
-              {likeStatus === 'error' ? (
+              {likeError ? (
                 <ErrorState
                   title="데이터를 불러올 수 없습니다"
                   description="잠시 후 다시 시도해주세요."
-                  onRetry={runLike}
+                  onRetry={refetchLike}
                 />
               ) : null}
 
-              {likeStatus === 'empty' ? (
+              {!likeLoading && !likeError && likedFestivals.length === 0 ? (
                 <EmptyState
                   title="표시할 행사가 없습니다"
                   description="탐색에서 더 많은 행사를 찾아보세요."
@@ -210,19 +213,17 @@ function MainPage() {
                 />
               ) : null}
 
-              {likeStatus === 'success' ? (
+              {!likeLoading && !likeError && likedFestivals.length > 0 ? (
                 <div className="space-y-3">
-                  {mockFestivalMostLikePage.post_responses.map(
-                    (festival, idx) => (
-                      <RankingCard
-                        key={festival.id}
-                        festival={festival}
-                        rank={idx + 1}
-                        statLabel="좋아요"
-                        statValue={festival.festival_like}
-                      />
-                    ),
-                  )}
+                  {likedFestivals.map((festival, idx) => (
+                    <RankingCard
+                      key={festival.id}
+                      festival={festival}
+                      rank={idx + 1}
+                      statLabel="좋아요"
+                      statValue={festival.festival_like}
+                    />
+                  ))}
                 </div>
               ) : null}
             </div>
@@ -238,23 +239,27 @@ function MainPage() {
             />
 
             <div className="mt-4">
-              {viewStatus === 'loading' ? (
+              {viewLoading ? (
                 <div className="space-y-3">
-                  {listSkeletonKeys.map((key) => (
-                    <Skeleton key={key} variant="listRow" className="h-24" />
+                  {Array.from({ length: 5 }, (_, idx) => (
+                    <Skeleton
+                      key={`view-skeleton-${idx}`}
+                      variant="listRow"
+                      className="h-24"
+                    />
                   ))}
                 </div>
               ) : null}
 
-              {viewStatus === 'error' ? (
+              {viewError ? (
                 <ErrorState
                   title="데이터를 불러올 수 없습니다"
                   description="잠시 후 다시 시도해주세요."
-                  onRetry={runView}
+                  onRetry={refetchView}
                 />
               ) : null}
 
-              {viewStatus === 'empty' ? (
+              {!viewLoading && !viewError && viewedFestivals.length === 0 ? (
                 <EmptyState
                   title="표시할 행사가 없습니다"
                   description="탐색에서 더 많은 행사를 찾아보세요."
@@ -265,20 +270,18 @@ function MainPage() {
                 />
               ) : null}
 
-              {viewStatus === 'success' ? (
+              {!viewLoading && !viewError && viewedFestivals.length > 0 ? (
                 <div className="space-y-3">
-                  {mockFestivalMostViewPage.post_responses.map(
-                    (festival, idx) => (
-                      <RankingCard
-                        key={festival.id}
-                        festival={festival}
-                        rank={idx + 1}
-                        statLabel="조회"
-                        statValue={festival.festival_view}
-                        showCategory={false}
-                      />
-                    ),
-                  )}
+                  {viewedFestivals.map((festival, idx) => (
+                    <RankingCard
+                      key={festival.id}
+                      festival={festival}
+                      rank={idx + 1}
+                      statLabel="조회"
+                      statValue={festival.festival_view}
+                      showCategory={false}
+                    />
+                  ))}
                 </div>
               ) : null}
             </div>

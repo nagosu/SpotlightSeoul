@@ -33,7 +33,8 @@ export default function RankingCard({
   statValue,
   showCategory = true,
 }: RankingCardProps) {
-  const hasThumb = Boolean(festival.thumb_img);
+  const imageSrc = festival.thumb_img ?? festival.main_img;
+  const hasImage = Boolean(imageSrc);
 
   return (
     <Link
@@ -46,9 +47,9 @@ export default function RankingCard({
     >
       <div className="flex items-stretch gap-4 p-4">
         <div className="relative h-20 w-28 shrink-0 overflow-hidden rounded-control bg-surface-2">
-          {hasThumb ? (
+          {hasImage ? (
             <img
-              src={festival.thumb_img ?? undefined}
+              src={imageSrc ?? undefined}
               alt={festival.title ?? '축제 이미지'}
               className="h-full w-full object-cover"
               loading="lazy"
