@@ -6,6 +6,7 @@ import { Input } from '@/components/ui';
 export type SearchBarProps = {
   value: string;
   suggestions: string[];
+  isLoading?: boolean;
   placeholder?: string;
   onChange: (value: string) => void;
   onSubmit: (value: string) => void;
@@ -19,6 +20,7 @@ function cx(...classes: Array<string | false | null | undefined>) {
 export default function SearchBar({
   value,
   suggestions,
+  isLoading = false,
   placeholder = '검색어로 축제를 찾아보세요',
   onChange,
   onSubmit,
@@ -29,17 +31,13 @@ export default function SearchBar({
   const [open, setOpen] = useState(false);
   const [activeIndex, setActiveIndex] = useState<number>(-1);
 
-  const filtered = useMemo(() => {
-    const q = value.trim();
-    if (q.length < 2) return [];
-    const lower = q.toLowerCase();
-    return suggestions
-      .filter((s) => s.toLowerCase().includes(lower))
-      .slice(0, 8);
-  }, [suggestions, value]);
+  const filtered = useMemo(() => suggestions.slice(0, 8), [suggestions]);
+  const hasEnoughQueryLength = value.trim().length >= 2;
 
   useEffect(() => {
-    if (filtered.length === 0) {
+    const shouldOpen =
+      hasEnoughQueryLength && (isLoading || filtered.length > 0);
+    if (!shouldOpen) {
       setActiveIndex(-1);
       setOpen(false);
       return;
@@ -48,7 +46,7 @@ export default function SearchBar({
     setActiveIndex((prev) =>
       prev >= 0 ? Math.min(prev, filtered.length - 1) : 0,
     );
-  }, [filtered.length]);
+  }, [filtered.length, hasEnoughQueryLength, isLoading]);
 
   useEffect(() => {
     const onClickOutside = (e: MouseEvent) => {
@@ -142,6 +140,14 @@ export default function SearchBar({
           )}
         >
           <ul className="max-h-64 overflow-auto py-1">
+            {isLoading ? (
+              <li
+                className="px-4 py-2 text-sm text-text-muted"
+                aria-live="polite"
+              >
+                자동완성 검색 중...
+              </li>
+            ) : null}
             {filtered.map((s, idx) => {
               const selected = idx === activeIndex;
               return (
