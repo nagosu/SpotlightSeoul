@@ -94,6 +94,7 @@ export async function getFestivalDetail(
 ): Promise<FestivalDetailResponse> {
   const response = await apiClient.get<FestivalDetailResponse>(
     `/api/v1/festivals/${id}`,
+    { withAuthToken: true },
   );
   return response.data;
 }
