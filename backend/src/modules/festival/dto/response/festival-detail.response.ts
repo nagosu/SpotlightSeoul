@@ -34,6 +34,18 @@ export class FestivalDetailResponse {
   festivalView: number;
   @ApiProperty({ name: 'festival_like', description: '좋아요 수', example: 45 })
   festivalLike: number;
+  @ApiProperty({
+    description: '현재 로그인 사용자의 좋아요 여부(비로그인/식별불가 시 null)',
+    nullable: true,
+    example: true,
+  })
+  liked: boolean | null;
+  @ApiProperty({
+    description: '현재 로그인 사용자의 북마크 여부(비로그인/식별불가 시 null)',
+    nullable: true,
+    example: false,
+  })
+  bookmarked: boolean | null;
 
   @ApiProperty({
     name: 'strt_date',

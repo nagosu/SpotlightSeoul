@@ -47,7 +47,7 @@ export class FestivalService {
     };
   }
 
-  async getDetail(id: string): Promise<FestivalDetailResponse> {
+  async getDetail(id: string, userId?: string): Promise<FestivalDetailResponse> {
     // 상세 조회 시 조회수 +1
     if (this.counterUpdateMode === 'atomic') {
       await this.festivalRepository.increaseViewAtomic(id);
@@ -55,7 +55,18 @@ export class FestivalService {
       await this.festivalRepository.increaseView(id);
     }
     const festival = await this.festivalRepository.findByIdOrFail(id);
-    return this.festivalMapper.toDetailResponse(festival);
+
+    let liked: boolean | null = null;
+    let bookmarked: boolean | null = null;
+
+    if (userId) {
+      [liked, bookmarked] = await Promise.all([
+        this.festivalRepository.isLikedBy(userId, id),
+        this.festivalRepository.isBookmarkedBy(userId, id),
+      ]);
+    }
+
+    return this.festivalMapper.toDetailResponse(festival, { liked, bookmarked });
   }
 
   async search(

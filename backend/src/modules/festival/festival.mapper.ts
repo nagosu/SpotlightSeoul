@@ -132,7 +132,10 @@ export class FestivalMapper {
     };
   }
 
-  toDetailResponse(entity: Festival): FestivalDetailResponse {
+  toDetailResponse(
+    entity: Festival,
+    interaction?: { liked: boolean | null; bookmarked: boolean | null },
+  ): FestivalDetailResponse {
     return {
       id: entity.id,
       title: entity.title ?? null,
@@ -144,6 +147,8 @@ export class FestivalMapper {
       thumbImg: entity.thumbImg ?? null,
       festivalView: entity.festivalView ?? 0,
       festivalLike: entity.festivalLike ?? 0,
+      liked: interaction?.liked ?? null,
+      bookmarked: interaction?.bookmarked ?? null,
       strtDate: entity.strtDate ?? null,
       endDate: entity.endDate ?? null,
       lat: entity.lat ?? null,
