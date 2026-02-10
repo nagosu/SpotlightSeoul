@@ -1,6 +1,6 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
-import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
-import type { FestivalDetailResponse } from '@/api/types';
+import { useCallback, useState } from 'react';
+import { useLocation, useNavigate, useParams } from 'react-router-dom';
+import type { ApiError } from '@/api';
 import {
   Badge,
   Button,
@@ -8,15 +8,15 @@ import {
   ErrorState,
   PageContainer,
   Skeleton,
+  useToast,
 } from '@/components/ui';
 import {
-  mockFestivalDetail,
-  mockFestivalDetailNoContent,
-  mockFestivalDetailNoMap,
-  mockFestivalDetailWithImage,
-} from '@/mocks/festivals';
-
-type PageStatus = 'loading' | 'error' | 'notfound' | 'success';
+  useFestivalDetailQuery,
+  useLikeFestivalMutation,
+  useToggleFestivalBookmarkMutation,
+  useToggleFestivalLikeMutation,
+} from '@/hooks';
+import { useAuthStore } from '@/stores/useAuthStore';
 type TabKey = 'info' | 'content' | 'map';
 
 function cx(...classes: Array<string | false | null | undefined>) {
@@ -228,6 +228,8 @@ function DetailActionBar({
   likeCount,
   liked,
   bookmarked,
+  likePending,
+  bookmarkPending,
   onToggleLike,
   onToggleBookmark,
   orgLink,
@@ -236,6 +238,8 @@ function DetailActionBar({
   likeCount: number;
   liked: boolean;
   bookmarked: boolean;
+  likePending: boolean;
+  bookmarkPending: boolean;
   onToggleLike: () => void;
   onToggleBookmark: () => void;
   orgLink: string | null;
@@ -265,9 +269,11 @@ function DetailActionBar({
           <button
             type="button"
             onClick={onToggleLike}
+            disabled={likePending}
             className={cx(
               'flex flex-1 items-center justify-center gap-2 rounded-control border px-4 py-3 font-LexendDeca text-sm font-semibold transition',
               'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary focus-visible:ring-offset-2',
+              likePending ? 'cursor-not-allowed opacity-60' : null,
               liked
                 ? 'border-brand-primary bg-brand-primary/10 text-brand-primary'
                 : 'border-border-default bg-surface-0 text-text-strong hover:bg-surface-2',
@@ -283,9 +289,11 @@ function DetailActionBar({
           <button
             type="button"
             onClick={onToggleBookmark}
+            disabled={bookmarkPending}
             className={cx(
               'flex flex-1 items-center justify-center gap-2 rounded-control border px-4 py-3 font-LexendDeca text-sm font-semibold transition',
               'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary focus-visible:ring-offset-2',
+              bookmarkPending ? 'cursor-not-allowed opacity-60' : null,
               bookmarked
                 ? 'border-brand-primary bg-brand-primary/10 text-brand-primary'
                 : 'border-border-default bg-surface-0 text-text-strong hover:bg-surface-2',
@@ -386,63 +394,41 @@ function DetailTabs({
 
 function DetailPage() {
   const navigate = useNavigate();
+  const location = useLocation();
   const { id } = useParams<{ id: string }>();
-  const [searchParams] = useSearchParams();
+  const festivalId = id ?? '';
+  const { isAuthenticated } = useAuthStore();
+  const { push } = useToast();
 
-  const [status, setStatus] = useState<PageStatus>('loading');
-  const [festival, setFestival] = useState<FestivalDetailResponse | null>(null);
-  const [liked, setLiked] = useState(false);
-  const [bookmarked, setBookmarked] = useState(false);
+  const detailQuery = useFestivalDetailQuery(festivalId, {
+    enabled: Boolean(festivalId),
+  });
+  const toggleLikeMutation = useToggleFestivalLikeMutation({
+    onError: () => {
+      push('좋아요 처리 중 문제가 발생했습니다', 'error');
+    },
+  });
+  const toggleBookmarkMutation = useToggleFestivalBookmarkMutation({
+    onError: () => {
+      push('북마크 처리 중 문제가 발생했습니다', 'error');
+    },
+  });
+  const likeMutation = useLikeFestivalMutation({
+    onError: () => {
+      push('좋아요 처리 중 문제가 발생했습니다', 'error');
+    },
+  });
+
   const [activeTab, setActiveTab] = useState<TabKey>('info');
   const [shareHint, setShareHint] = useState<string | null>(null);
 
-  const mockById = useMemo<Record<string, FestivalDetailResponse>>(
-    () => ({
-      '1': mockFestivalDetail,
-      '2': mockFestivalDetailWithImage,
-      '3': mockFestivalDetailNoContent,
-      '4': mockFestivalDetailNoMap,
-    }),
-    [],
-  );
-
-  const runLoad = useCallback(() => {
-    setStatus('loading');
-    setShareHint(null);
-
-    const mockMode = searchParams.get('mock');
-    window.setTimeout(() => {
-      if (mockMode === 'error') {
-        setFestival(null);
-        setStatus('error');
-        return;
-      }
-
-      if (!id || !mockById[id]) {
-        setFestival(null);
-        setStatus('notfound');
-        return;
-      }
-
-      const data = mockById[id];
-      setFestival(data);
-      setLiked(false);
-      setBookmarked(false);
-      setActiveTab('info');
-      setStatus('success');
-    }, 500);
-  }, [id, mockById, searchParams]);
-
-  useEffect(() => {
-    runLoad();
-  }, [runLoad]);
+  const festival = detailQuery.data ?? null;
+  const liked = Boolean(festival?.liked);
+  const bookmarked = Boolean(festival?.bookmarked);
+  const likeCount = Math.max(0, festival?.festival_like ?? 0);
 
   const hasMap = Boolean(festival?.lat != null && festival?.lot != null);
   const freeLabel = getFreeLabel(festival?.is_free ?? null);
-  const likeCount = Math.max(
-    0,
-    (festival?.festival_like ?? 0) + (liked ? 1 : 0),
-  );
 
   const onShare = useCallback(async () => {
     const url = window.location.href;
@@ -471,16 +457,76 @@ function DetailPage() {
     }
   }, [festival?.title]);
 
-  if (status === 'loading') return <DetailSkeleton />;
+  const handleToggleLike = useCallback(() => {
+    if (!festivalId) return;
 
-  if (status === 'error') {
+    if (isAuthenticated) {
+      toggleLikeMutation.mutate(festivalId);
+      return;
+    }
+
+    const localLikeKey = `festival_like_once:${festivalId}`;
+    try {
+      if (window.localStorage.getItem(localLikeKey)) {
+        push('이미 좋아요를 눌렀습니다', 'info');
+        return;
+      }
+    } catch {
+      // localStorage 접근이 불가한 환경에서는 중복 체크를 생략합니다.
+    }
+
+    likeMutation.mutate(festivalId, {
+      onSuccess: () => {
+        try {
+          window.localStorage.setItem(localLikeKey, '1');
+        } catch {
+          // localStorage 접근이 불가한 환경에서는 저장을 생략합니다.
+        }
+        push('좋아요를 반영했습니다', 'success');
+      },
+    });
+  }, [festivalId, isAuthenticated, likeMutation, push, toggleLikeMutation]);
+
+  const handleToggleBookmark = useCallback(() => {
+    if (!festivalId) return;
+
+    if (isAuthenticated) {
+      toggleBookmarkMutation.mutate(festivalId);
+      return;
+    }
+
+    push('북마크는 로그인이 필요합니다', 'info');
+    const returnTo = `${location.pathname}${location.search}${location.hash}`;
+    const params = new URLSearchParams({ returnTo });
+    navigate(`/auth/login?${params.toString()}`);
+  }, [
+    festivalId,
+    isAuthenticated,
+    location.hash,
+    location.pathname,
+    location.search,
+    navigate,
+    push,
+    toggleBookmarkMutation,
+  ]);
+
+  if (detailQuery.isLoading) return <DetailSkeleton />;
+
+  const apiError = detailQuery.error as ApiError | null;
+  const isNotFound =
+    detailQuery.isError &&
+    (apiError?.statusCode === 404 || apiError?.httpStatus === 404);
+
+  if (detailQuery.isError && !isNotFound) {
     return (
       <div className="min-h-screen bg-surface-1 py-10">
         <PageContainer>
           <ErrorState
             title="상세 정보를 불러올 수 없습니다"
-            description="잠시 후 다시 시도해주세요."
-            onRetry={runLoad}
+            description={apiError?.message ?? '잠시 후 다시 시도해주세요.'}
+            onRetry={() => {
+              detailQuery.refetch();
+            }}
           />
           <div className="mt-4 flex justify-center">
             <Button
@@ -497,7 +543,7 @@ function DetailPage() {
     );
   }
 
-  if (status === 'notfound' || !festival) {
+  if (isNotFound || !festival) {
     return (
       <div className="min-h-screen bg-surface-1 py-10">
         <PageContainer>
@@ -571,11 +617,15 @@ function DetailPage() {
 
               <button
                 type="button"
-                onClick={() => setBookmarked((v) => !v)}
+                onClick={handleToggleBookmark}
+                disabled={toggleBookmarkMutation.isPending}
                 className={cx(
                   'inline-flex h-10 w-10 items-center justify-center rounded-control border border-white/20 bg-white/10 text-white',
                   'hover:bg-white/15 transition',
                   'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-black/30',
+                  toggleBookmarkMutation.isPending
+                    ? 'cursor-not-allowed opacity-60'
+                    : null,
                 )}
                 aria-label="북마크 토글"
                 aria-pressed={bookmarked}
@@ -642,8 +692,10 @@ function DetailPage() {
                   likeCount={likeCount}
                   liked={liked}
                   bookmarked={bookmarked}
-                  onToggleLike={() => setLiked((v) => !v)}
-                  onToggleBookmark={() => setBookmarked((v) => !v)}
+                  likePending={toggleLikeMutation.isPending || likeMutation.isPending}
+                  bookmarkPending={toggleBookmarkMutation.isPending}
+                  onToggleLike={handleToggleLike}
+                  onToggleBookmark={handleToggleBookmark}
                   orgLink={festival.org_link}
                   variant="desktopInline"
                 />
@@ -805,8 +857,10 @@ function DetailPage() {
         likeCount={likeCount}
         liked={liked}
         bookmarked={bookmarked}
-        onToggleLike={() => setLiked((v) => !v)}
-        onToggleBookmark={() => setBookmarked((v) => !v)}
+        likePending={toggleLikeMutation.isPending || likeMutation.isPending}
+        bookmarkPending={toggleBookmarkMutation.isPending}
+        onToggleLike={handleToggleLike}
+        onToggleBookmark={handleToggleBookmark}
         orgLink={festival.org_link}
         variant="mobileSticky"
       />
