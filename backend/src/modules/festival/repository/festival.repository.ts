@@ -56,6 +56,16 @@ export class FestivalRepository {
     return festival;
   }
 
+  async isLikedBy(userId: string, festivalId: string): Promise<boolean> {
+    const count = await this.likeRepo.countBy({ userId, festivalId });
+    return count > 0;
+  }
+
+  async isBookmarkedBy(userId: string, festivalId: string): Promise<boolean> {
+    const count = await this.bookmarkRepo.countBy({ userId, festivalId });
+    return count > 0;
+  }
+
   async searchByTitle(keyword: string, page: number, size: number) {
     const kw = keyword ?? '';
     const like = `%${kw}%`;

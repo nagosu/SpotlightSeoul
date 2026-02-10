@@ -38,6 +38,7 @@ import { FestivalNearPageResponse } from './dto/response/festival-near-page.resp
 import { FestivalSuggestQuery } from './dto/response/festival-suggest-query';
 import { FestivalSuggestResponse } from './dto/response/festival-suggest.response';
 import { JwtAuthorizationGuard } from '../user/jwt/jwt-authorization.guard';
+import { OptionalJwtAuthorizationGuard } from '../user/jwt/optional-jwt-authorization.guard';
 import { JwtAuthorization } from '../user/jwt/jwt-authorization.decorator';
 import { UserTokenInfo } from '../user/jwt/user-token-info.type';
 import {
@@ -198,9 +199,13 @@ export class FestivalController {
   @ApiParam({ name: 'id', example: '1' })
   @ApiOkResponse({ type: FestivalDetailResponse })
   @ApiPublicResponses()
+  @UseGuards(OptionalJwtAuthorizationGuard)
   @Get(':id')
-  getDetail(@Param('id') id: string): Promise<FestivalDetailResponse> {
-    return this.festivalService.getDetail(id);
+  getDetail(
+    @Param('id') id: string,
+    @JwtAuthorization() userTokenInfo: UserTokenInfo | undefined,
+  ): Promise<FestivalDetailResponse> {
+    return this.festivalService.getDetail(id, userTokenInfo?.id);
   }
 
   // 3) POST /festivals (검색, REPLACE 포함) → 200 OK (조회 성격)
